@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prescripto — Upload</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-soft: #eef2ff;
+      --bg: #f3f4fb;
+      --card-bg: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-subtle: #e5e7eb;
+      --accent-soft: #fff7ed;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #e0e7ff 0, #f9fafb 45%, #eef2ff 100%);
+      color: var(--text-main);
+    }
+
+    .shell {
+      max-width: 1100px;          /* narrower so cards are closer */
+      margin: 24px auto 32px;
+      padding: 0 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 8px 18px rgba(79, 70, 229, 0.35);
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.05);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
+      gap: 18px;                  /* smaller gap between cards */
+      align-items: flex-start;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+      padding: 20px 22px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    p.lead {
+      margin: 0 0 14px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .dropzone {
+      border: 2px dashed #c7d2fe;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 12px;
+      background: var(--primary-soft);
+      min-height: 190px;          /* fixed height so it looks neat */
+      display: flex;
+      flex-direction: vertical;
+      flex-direction: column;
+      justify-content: center;
+      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .dropzone:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 160px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #f9fafb;
+      margin-top: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      background: var(--primary);
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      margin-right: 8px;
+      font-size: 13px;
+      box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.08s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(79, 70, 229, 0.4);
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #374151;
+      box-shadow: none;
+    }
+
+    button.secondary.small {
+      padding: 4px 10px;
+      font-size: 12px;
+      margin-right: 0;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    input[type="file"] { display: none; }
+
+    .results-list {
+      margin-top: 4px;
+      border-radius: 12px;
+      background: #f9fafb;
+      padding: 6px 8px;
+      max-height: 140px;
+      min-height: 32px;           /* smaller when empty */
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+    }
+
+    .results-list div {
+      padding: 4px 6px;
+      border-radius: 6px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    #status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    #meds-empty {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">Rx</div>
+      <div class="brand-title">Prescripto</div>
+    </div>
+    <div class="badge">Prototype · OCR → Dictionary → Reminders</div>
+  </div>
+
+  <div class="page">
+    <!-- Left: Upload -->
+    <div class="card">
+      <h1>Upload prescription</h1>
+      <p class="lead">Upload a prescription photo → extract medicines → preview reminders.</p>
+
+      <label class="dropzone" id="dropzone">
+        <div>Drag & drop an image here<br />or click to choose.</div>
+        <input id="file-input" type="file" accept="image/*" />
+        <img id="preview" class="preview-img" style="display:none;" />
+      </label>
+
+      <div>
+        <button id="upload-btn" disabled>Upload to /predict</button>
+        <button class="secondary" id="clear-btn">Clear</button>
+      </div>
+
+      <div id="status"></div>
+    </div>
+
+    <!-- Right: Results -->
+    <div class="card">
+      <h2 style="margin-bottom:8px;">Preview & Results</h2>
+
+      <div class="section-header" style="margin-top:0;">
+        <div style="font-size:13px;color:#6b7280;">Corrected lines</div>
+        <button id="add-line-btn" class="secondary small">Add line</button>
+      </div>
+      <div class="results-list" id="lines-box"></div>
+
+      <div class="section-header">
+        <h2 style="margin:0;">Medicines & reminder info</h2>
+        <div style="display:flex;gap:6px;">
+          <button id="add-row-btn" class="secondary small">Add row</button>
+          <button id="edit-btn" class="secondary small">Edit table</button>
+        </div>
+      </div>
+
+      <div id="meds-empty">Upload a prescription to see parsed medicines.</div>
+      <table id="meds-table" style="display:none;">
+        <thead>
+        <tr>
+          <th>Medicine</th>
+          <th>Form</th>
+          <th>Strength</th>
+          <th>Pattern</th>
+          <th>Days</th>
+        </tr>
+        </thead>
+        <tbody id="meds-body"></tbody>
+      </table>
+
+      <!-- Reminders + countdown -->
+      <div class="section-header" style="margin-top:18px;">
+        <h3 style="font-size:16px;margin:0;">Reminders & countdown</h3>
+        <button id="generate-reminders-btn" class="secondary small">Generate from table</button>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center;margin-top:6px;font-size:13px;flex-wrap:wrap;">
+        <label>
+          Start date:
+          <input type="date" id="reminder-start-date" />
+        </label>
+        <label>
+          Notifications:
+          <button id="toggle-notifications-btn" class="secondary small">Off</button>
+        </label>
+      </div>
+
+      <div id="countdown-box" style="margin-top:8px;font-size:13px;color:#4b5563;">
+        Next dose: <span id="next-dose-label">—</span>
+        &nbsp;|&nbsp;
+        Time left: <span id="next-dose-countdown">—</span>
+      </div>
+
+      <table id="reminders-table" style="margin-top:8px;display:none;">
+        <thead>
+        <tr>
+          <th>Date &amp; time</th>
+          <th>Medicine</th>
+          <th>Dose</th>
+          <th>Status</th>
+        </tr>
+        </thead>
+        <tbody id="reminders-body"></tbody>
+      </table>
+
+      <p style="margin-top:8px;font-size:11px;color:#9ca3af;">
+        Tip: Use <strong>pattern</strong> (e.g. 1-0-1) and <strong>days</strong> to generate reminder timestamps in your notification module.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BACKEND_BASE = "http://127.0.0.1:8000";
+
+  const fileInput = document.getElementById("file-input");
+  const dropzone  = document.getElementById("dropzone");
+  const preview   = document.getElementById("preview");
+  const uploadBtn = document.getElementById("upload-btn");
+  const clearBtn  = document.getElementById("clear-btn");
+  const linesBox  = document.getElementById("lines-box");
+  const medsTable = document.getElementById("meds-table");
+  const medsBody  = document.getElementById("meds-body");
+  const medsEmpty = document.getElementById("meds-empty");
+  const statusBox = document.getElementById("status");
+  const editBtn   = document.getElementById("edit-btn");
+  const addRowBtn = document.getElementById("add-row-btn");
+  const addLineBtn = document.getElementById("add-line-btn");
+
+  let selectedFile = null;
+  let editMode = false;
+
+  function setStatus(msg) {
+    console.log("[STATUS]", msg);
+    statusBox.textContent = msg;
+  }
+
+  function setEditMode(on) {
+    editMode = on;
+    editBtn.textContent = on ? "Done editing" : "Edit table";
+
+    const cells = medsBody.querySelectorAll("td");
+    cells.forEach(td => {
+      td.contentEditable = on ? "true" : "false";
+      td.style.backgroundColor = on ? "#fff7ed" : "";
+    });
+
+    if (on) {
+      setStatus("Edit cells directly, then click 'Done editing'.");
+    } else {
+      setStatus("Edits saved locally.");
+    }
+  }
+
+  editBtn.addEventListener("click", () => {
+    if (!medsBody.querySelector("tr")) {
+      setStatus("Nothing to edit yet. Upload a prescription first.");
+      return;
+    }
+    setEditMode(!editMode);
+  });
+
+  addRowBtn.addEventListener("click", () => {
+    medsEmpty.style.display = "none";
+    medsTable.style.display = "table";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    `;
+    medsBody.appendChild(tr);
+    // ensure new row is editable
+    setEditMode(true);
+    setStatus("New medicine row added. Fill in the details.");
+  });
+
+  addLineBtn.addEventListener("click", () => {
+    const div = document.createElement("div");
+    div.textContent = "";
+    div.contentEditable = "true";
+    div.style.backgroundColor = "#fff7ed";
+    div.style.borderRadius = "8px";
+    div.style.minHeight = "20px";
+    linesBox.appendChild(div);
+    setStatus("New corrected line added. Type directly into the box.");
+  });
+
+  dropzone.addEventListener("click", () => fileInput.click());
+
+  dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.style.borderColor = "#4f46e5";
+  });
+  dropzone.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    dropzone.style.borderColor = "#c7d2fe";
+  });
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.style.borderColor = "#c7d2fe";
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  });
+
+  function handleFile(file) {
+    selectedFile = file;
+    uploadBtn.disabled = false;
+    setStatus("Selected file: " + file.name);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      preview.src = ev.target.result;
+      preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearBtn.addEventListener("click", () => {
+    selectedFile = null;
+    preview.src = "";
+    preview.style.display = "none";
+    uploadBtn.disabled = true;
+    linesBox.innerHTML = "";
+    medsBody.innerHTML = "";
+    medsTable.style.display = "none";
+    medsEmpty.style.display = "block";
+    setEditMode(false);
+    setStatus("Cleared.");
+    // also clear reminders UI
+    reminders = [];
+    remindersBody.innerHTML = "";
+    remindersTable.style.display = "none";
+    nextDoseLabel.textContent = "—";
+    nextDoseCountdown.textContent = "—";
+  });
+
+  uploadBtn.addEventListener("click", async () => {
+    if (!selectedFile) {
+      setStatus("No file selected.");
+      return;
+    }
+
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "Processing…";
+    setStatus("Uploading to backend…");
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const res = await fetch(`${BACKEND_BASE}/predict`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        setStatus("Backend error: " + res.status);
+        console.error("Backend error", res.status, await res.text());
+        return;
+      }
+
+      const data = await res.json();
+      setStatus("Got response from backend.");
+      renderResult(data);
+    } catch (err) {
+      console.error(err);
+      setStatus("Error calling backend. See console.");
+      alert("Error calling backend. Check console and server logs.");
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = "Upload to /predict";
+    }
+  });
+
+  function renderResult(data) {
+    setEditMode(false); // reset edit mode when new results come in
+
+    // corrected lines
+    linesBox.innerHTML = "";
+    (data.corrected_lines || []).forEach((line) => {
+      const div = document.createElement("div");
+      div.textContent = line;
+      linesBox.appendChild(div);
+    });
+
+    // medicines table
+    medsBody.innerHTML = "";
+    const meds = data.medicines || [];
+    if (!meds.length) {
+      medsTable.style.display = "none";
+      medsEmpty.style.display = "block";
+      return;
+    }
+
+    medsEmpty.style.display = "none";
+    medsTable.style.display = "table";
+
+    meds.forEach((m) => {
+      const tr = document.createElement("tr");
+      const name = m.name || "(unknown)";
+      tr.innerHTML = `
+        <td>${name}</td>
+        <td>${m.form || ""}</td>
+        <td>${m.strength || ""}</td>
+        <td>${m.pattern || ""}</td>
+        <td>${m.days ?? ""}</td>
+      `;
+      medsBody.appendChild(tr);
+    });
+
+    // clear any existing reminders when new result comes in
+    reminders = [];
+    remindersBody.innerHTML = "";
+    remindersTable.style.display = "none";
+    nextDoseLabel.textContent = "—";
+    nextDoseCountdown.textContent = "—";
+  }
+
+  // =================== REMINDERS + COUNTDOWN ===================
+
+  const SLOT_TIMES = {
+    morning: { hour: 8,  minute: 0 },
+    afternoon: { hour: 14, minute: 0 },
+    night: { hour: 20, minute: 0 },
+  };
+
+  const generateBtn = document.getElementById("generate-reminders-btn");
+  const startDateInput = document.getElementById("reminder-start-date");
+  const remindersTable = document.getElementById("reminders-table");
+  const remindersBody = document.getElementById("reminders-body");
+  const nextDoseLabel = document.getElementById("next-dose-label");
+  const nextDoseCountdown = document.getElementById("next-dose-countdown");
+  const toggleNotifBtn = document.getElementById("toggle-notifications-btn");
+
+  let reminders = [];          // array of { datetime: Date, medicine, doseLabel, status }
+  let countdownTimer = null;
+  let notificationTimers = [];
+  let notificationsEnabled = false;
+
+  // default start date = today
+  (function initStartDate() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    startDateInput.value = `${yyyy}-${mm}-${dd}`;
+  })();
+
+  function parsePattern(patternStr) {
+    // pattern like "1-0-1", "0-0-1" → slots
+    if (!patternStr) return [];
+    const clean = patternStr.replace(/\s+/g, "");
+    const parts = clean.split("-");
+    if (parts.length !== 3) return [];
+
+    const [m, a, n] = parts;
+    const slots = [];
+    if (m === "1") slots.push("morning");
+    if (a === "1") slots.push("afternoon");
+    if (n === "1") slots.push("night");
+    return slots;
+  }
+
+  function createScheduleFromTable() {
+    reminders = [];
+    remindersBody.innerHTML = "";
+    remindersTable.style.display = "none";
+
+    const startDateStr = startDateInput.value;
+    if (!startDateStr) {
+      alert("Please choose a start date.");
+      return;
+    }
+
+    const startDateParts = startDateStr.split("-");
+    const baseYear = parseInt(startDateParts[0], 10);
+    const baseMonth = parseInt(startDateParts[1], 10) - 1;
+    const baseDay = parseInt(startDateParts[2], 10);
+
+    const rows = Array.from(document.querySelectorAll("#meds-body tr"));
+
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("td");
+      if (!cells.length) return;
+
+      const name = (cells[0].innerText || "").trim();
+      const pattern = (cells[3]?.innerText || "").trim();
+      const daysStr = (cells[4]?.innerText || "").trim();
+
+      if (!name) return;
+
+      const slots = parsePattern(pattern);
+      const days = daysStr ? parseInt(daysStr, 10) : 1;
+
+      if (!slots.length && !daysStr) {
+        // if neither pattern nor days given, we still create a single reminder "today"
+        const dt = new Date(baseYear, baseMonth, baseDay, 9, 0, 0);
+        reminders.push({
+          datetime: dt,
+          medicine: name,
+          doseLabel: "1 dose",
+          status: "upcoming",
+        });
+        return;
+      }
+
+      for (let d = 0; d < Math.max(days, 1); d++) {
+        slots.forEach((slot) => {
+          const time = SLOT_TIMES[slot];
+          if (!time) return;
+          const dt = new Date(baseYear, baseMonth, baseDay + d, time.hour, time.minute, 0);
+          const doseLabel = `${slot}`;
+          reminders.push({
+            datetime: dt,
+            medicine: name,
+            doseLabel,
+            status: "upcoming",
+          });
+        });
+      }
+    });
+
+    // sort by time
+    reminders.sort((a, b) => a.datetime - b.datetime);
+
+    // render table
+    reminders.forEach((r) => {
+      const tr = document.createElement("tr");
+      const dtStr = r.datetime.toLocaleString();
+      tr.innerHTML = `
+        <td>${dtStr}</td>
+        <td>${r.medicine}</td>
+        <td>${r.doseLabel}</td>
+        <td>${r.status}</td>
+      `;
+      remindersBody.appendChild(tr);
+    });
+
+    if (reminders.length) {
+      remindersTable.style.display = "table";
+      setupCountdownAndNotifications();
+    } else {
+      nextDoseLabel.textContent = "—";
+      nextDoseCountdown.textContent = "—";
+      remindersTable.style.display = "none";
+    }
+  }
+
+  function getNextUpcomingReminder() {
+    const now = new Date();
+    return reminders.find((r) => r.datetime > now && r.status === "upcoming") || null;
+  }
+
+  function setupCountdownAndNotifications() {
+    // clear old timers
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+    notificationTimers.forEach(clearTimeout);
+    notificationTimers = [];
+
+    const next = getNextUpcomingReminder();
+    if (!next) {
+      nextDoseLabel.textContent = "None scheduled";
+      nextDoseCountdown.textContent = "—";
+      return;
+    }
+
+    nextDoseLabel.textContent = `${next.medicine} (${next.doseLabel}) at ${next.datetime.toLocaleString()}`;
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = next.datetime - now;
+      if (diff <= 0) {
+        nextDoseCountdown.textContent = "due now";
+        return;
+      }
+      const sec = Math.floor(diff / 1000) % 60;
+      const min = Math.floor(diff / (1000 * 60)) % 60;
+      const hrs = Math.floor(diff / (1000 * 60 * 60)) % 24;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const parts = [];
+      if (days > 0) parts.push(`${days}d`);
+      if (hrs > 0 || days > 0) parts.push(`${hrs}h`);
+      parts.push(`${min}m`);
+      parts.push(`${sec}s`);
+      nextDoseCountdown.textContent = parts.join(" ");
+    }
+
+    updateCountdown();
+    countdownTimer = setInterval(updateCountdown, 1000);
+
+    if (notificationsEnabled && "Notification" in window) {
+      const now = new Date();
+      const delay = next.datetime - now;
+      if (delay > 0) {
+        const timerId = setTimeout(() => {
+          new Notification("Prescripto reminder", {
+            body: `${next.medicine} (${next.doseLabel}) is due now.`,
+          });
+        }, delay);
+        notificationTimers.push(timerId);
+      }
+    }
+  }
+
+  async function ensureNotificationPermission() {
+    if (!("Notification" in window)) {
+      alert("This browser does not support notifications.");
+      return false;
+    }
+    if (Notification.permission === "granted") return true;
+    if (Notification.permission === "denied") return false;
+    const result = await Notification.requestPermission();
+    return result === "granted";
+  }
+
+  toggleNotifBtn.addEventListener("click", async () => {
+    if (!notificationsEnabled) {
+      const ok = await ensureNotificationPermission();
+      if (!ok) {
+        alert("Notifications are blocked or not allowed.");
+        return;
+      }
+      notificationsEnabled = true;
+      toggleNotifBtn.textContent = "On";
+    } else {
+      notificationsEnabled = false;
+      toggleNotifBtn.textContent = "Off";
+      notificationTimers.forEach(clearTimeout);
+      notificationTimers = [];
+    }
+    if (reminders.length) {
+      setupCountdownAndNotifications();
+    }
+  });
+
+  generateBtn.addEventListener("click", () => {
+    createScheduleFromTable();
+  });
+</script>
+</body>
+</html>
